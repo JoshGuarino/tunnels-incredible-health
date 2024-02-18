@@ -10,6 +10,8 @@ import (
 
 const START = "https://tunnels.incredible.health"
 
+var exitRoute = []string{}
+
 type Node struct {
 	Description string `json:"description"`
 	Left        string `json:"left"`
@@ -33,16 +35,20 @@ func getNode(url string) Node {
 	return node
 }
 
-func findExit(nodeUrl string) {
+func findExitDfs(nodeUrl string) {
 	node := getNode(nodeUrl)
+	exitRoute = append(exitRoute, nodeUrl)
 
 	if node.AtExit {
-		fmt.Println(node)
+		fmt.Println(node.Description)
+		route, _ := json.MarshalIndent(exitRoute, "", "")
+		_ = ioutil.WriteFile("exit_route.json", route, 0644)
 		os.Exit(0)
 	}
 
 	if node.Left == "" && node.Right == "" {
 		fmt.Println("dead end")
+		exitRoute = exitRoute[0 : len(exitRoute)-1]
 		return
 	}
 
@@ -53,10 +59,34 @@ func findExit(nodeUrl string) {
 		} else {
 			fmt.Println("right")
 		}
-		findExit(path)
+		findExitDfs(path)
+	}
+	exitRoute = exitRoute[0 : len(exitRoute)-1]
+}
+
+func findExitBfs(startUrl string) {
+	queue := []string{startUrl}
+	for len(queue) > 0 {
+		node := getNode(queue[0])
+		fmt.Println(queue[0])
+		queue = queue[1:]
+
+		if node.AtExit {
+			fmt.Println(node.Description)
+			os.Exit(0)
+		}
+
+		if node.Left != "" {
+			queue = append(queue, node.Left)
+		}
+
+		if node.Right != "" {
+			queue = append(queue, node.Right)
+		}
 	}
 }
 
 func main() {
-	findExit(START)
+	findExitDfs(START)
+	findExitBfs(START)
 }
