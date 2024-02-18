@@ -19,7 +19,6 @@ type Node struct {
 }
 
 func getNode(url string) Node {
-	node := Node{}
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Accept", "application/json")
 	client := &http.Client{}
@@ -29,13 +28,13 @@ func getNode(url string) Node {
 	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
+	node := Node{}
 	json.Unmarshal(body, &node)
 	return node
 }
 
 func findExit(nodeUrl string) {
-	node := Node{}
-	node = getNode(nodeUrl)
+	node := getNode(nodeUrl)
 
 	if node.AtExit {
 		fmt.Println(node)
