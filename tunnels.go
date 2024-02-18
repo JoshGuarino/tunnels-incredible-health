@@ -63,5 +63,4 @@ func findExit(nodeUrl string) {
 
 func main() {
 	findExit(START)
-	// getNode("https://tunnels.incredible.health/5d388f91-a043-4fa2-b843-2b7d5ee0e6a5")
 }
