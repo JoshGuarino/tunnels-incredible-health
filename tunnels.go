@@ -30,9 +30,6 @@ func getNode(url string) Node {
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 	json.Unmarshal(body, &node)
-
-	// fmt.Println(node)
-
 	return node
 }
 
