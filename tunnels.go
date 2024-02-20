@@ -9,8 +9,10 @@ import (
 )
 
 const START = "https://tunnels.incredible.health"
+const USAGE = "Usage 'go run tunnels.go <arg>':\n	dfs - depth first search\n	bfs - breadth first search"
 
-var exitRoute = []string{}
+var count = 0
+var exitRoute = []RouteEntry{}
 
 type Node struct {
 	Description string `json:"description"`
@@ -18,6 +20,11 @@ type Node struct {
 	Right       string `json:"right"`
 	Back        string `json:"back"`
 	AtExit      bool   `json:"atExit"`
+}
+
+type RouteEntry struct {
+	Direction string
+	NodeUrl   string
 }
 
 func getNode(url string) Node {
@@ -35,19 +42,23 @@ func getNode(url string) Node {
 	return node
 }
 
-func findExitDfs(nodeUrl string) {
+func findExitDfs(nodeUrl string, direction string) {
 	node := getNode(nodeUrl)
-	exitRoute = append(exitRoute, nodeUrl)
+	exitRoute = append(exitRoute, RouteEntry{Direction: direction, NodeUrl: nodeUrl})
+	count++
+	fmt.Print("\033[H\033[2J")
+	fmt.Println("TOTAL:", count, "\nCHECKING -->", nodeUrl)
+	fmt.Println("\nEXIT ROUTE:")
+	for _, path := range exitRoute {
+		fmt.Println(path.Direction, "-->", path.NodeUrl)
+	}
 
 	if node.AtExit {
-		fmt.Println(node.Description)
-		route, _ := json.MarshalIndent(exitRoute, "", "")
-		_ = ioutil.WriteFile("exit_route.json", route, 0644)
+		fmt.Println("\n", node.Description)
 		os.Exit(0)
 	}
 
 	if node.Left == "" && node.Right == "" {
-		fmt.Println("dead end")
 		exitRoute = exitRoute[0 : len(exitRoute)-1]
 		return
 	}
@@ -55,11 +66,11 @@ func findExitDfs(nodeUrl string) {
 	paths := [2]string{node.Left, node.Right}
 	for idx, path := range paths {
 		if idx == 0 {
-			fmt.Println("left")
+			direction = "left"
 		} else {
-			fmt.Println("right")
+			direction = "right"
 		}
-		findExitDfs(path)
+		findExitDfs(path, direction)
 	}
 	exitRoute = exitRoute[0 : len(exitRoute)-1]
 }
@@ -68,11 +79,13 @@ func findExitBfs(startUrl string) {
 	queue := []string{startUrl}
 	for len(queue) > 0 {
 		node := getNode(queue[0])
-		fmt.Println(queue[0])
+		count++
+		fmt.Print("\033[H\033[2J")
+		fmt.Println("TOTAL:", count, "\nCHECKING -->", queue[0])
 		queue = queue[1:]
 
 		if node.AtExit {
-			fmt.Println(node.Description)
+			fmt.Println("\n", node.Description)
 			os.Exit(0)
 		}
 
@@ -87,6 +100,17 @@ func findExitBfs(startUrl string) {
 }
 
 func main() {
-	findExitDfs(START)
-	findExitBfs(START)
+	if len(os.Args) < 2 {
+		fmt.Println(USAGE)
+		os.Exit(0)
+	}
+	search := os.Args[1]
+	switch search {
+	case "bfs":
+		findExitBfs(START)
+	case "dfs":
+		findExitDfs(START, "start")
+	default:
+		fmt.Println(USAGE)
+	}
 }
