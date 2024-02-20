@@ -12,7 +12,7 @@ const START = "https://tunnels.incredible.health"
 const USAGE = "Usage 'go run tunnels.go <arg>':\n	dfs - depth first search\n	bfs - breadth first search"
 
 var count = 0
-var exitRoute = []RouteEntry{}
+var exitRoute = []Path{}
 
 type Node struct {
 	Description string `json:"description"`
@@ -22,7 +22,7 @@ type Node struct {
 	AtExit      bool   `json:"atExit"`
 }
 
-type RouteEntry struct {
+type Path struct {
 	Direction string
 	NodeUrl   string
 }
@@ -44,7 +44,7 @@ func getNode(url string) Node {
 
 func findExitDfs(nodeUrl string, direction string) {
 	node := getNode(nodeUrl)
-	exitRoute = append(exitRoute, RouteEntry{Direction: direction, NodeUrl: nodeUrl})
+	exitRoute = append(exitRoute, Path{Direction: direction, NodeUrl: nodeUrl})
 	count++
 	fmt.Print("\033[H\033[2J")
 	fmt.Println("TOTAL:", count, "\nCHECKING -->", nodeUrl)

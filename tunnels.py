@@ -23,7 +23,7 @@ def find_exit_dfs(node_url: str, direction: str) -> None:
         print(f'{path["direction"]} --> {path["node_url"]}')
 
     if node['atExit']:
-        print(node['description'])
+        print(f'\n{node["description"]}')
         exit()
 
     if node['left'] == None and node['right'] == None:
