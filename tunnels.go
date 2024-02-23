@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 )
 
 const START = "https://tunnels.incredible.health"
@@ -27,6 +28,28 @@ type Path struct {
 	NodeUrl   string
 }
 
+func resetTerminal() {
+	clear := exec.Command("clear")
+	clear.Stdout = os.Stdout
+	clear.Run()
+}
+
+func printMainOutput(nodeUrl string) {
+	fmt.Println("TOTAL:", count, "\nCHECKING -->", nodeUrl)
+}
+
+func printExitRoute() {
+	fmt.Println("\nEXIT ROUTE:")
+	for _, path := range exitRoute {
+		fmt.Println(path.Direction, "-->", path.NodeUrl)
+	}
+}
+
+func exit(node Node) {
+	fmt.Println("\n", node.Description)
+	os.Exit(0)
+}
+
 func getNode(url string) Node {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Accept", "application/json")
@@ -46,16 +69,12 @@ func findExitDfs(nodeUrl string, direction string) {
 	node := getNode(nodeUrl)
 	exitRoute = append(exitRoute, Path{Direction: direction, NodeUrl: nodeUrl})
 	count++
-	fmt.Print("\033[H\033[2J")
-	fmt.Println("TOTAL:", count, "\nCHECKING -->", nodeUrl)
-	fmt.Println("\nEXIT ROUTE:")
-	for _, path := range exitRoute {
-		fmt.Println(path.Direction, "-->", path.NodeUrl)
-	}
+	resetTerminal()
+	printMainOutput(nodeUrl)
+	printExitRoute()
 
 	if node.AtExit {
-		fmt.Println("\n", node.Description)
-		os.Exit(0)
+		exit(node)
 	}
 
 	if node.Left == "" && node.Right == "" {
@@ -80,13 +99,12 @@ func findExitBfs(startUrl string) {
 	for len(queue) > 0 {
 		node := getNode(queue[0])
 		count++
-		fmt.Print("\033[H\033[2J")
-		fmt.Println("TOTAL:", count, "\nCHECKING -->", queue[0])
+		resetTerminal()
+		printMainOutput(queue[0])
 		queue = queue[1:]
 
 		if node.AtExit {
-			fmt.Println("\n", node.Description)
-			os.Exit(0)
+			exit(node)
 		}
 
 		if node.Left != "" {
